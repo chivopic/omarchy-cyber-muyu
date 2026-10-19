@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.chivopic.cyber-muyu",
+  "name": "Cyber Muyu (赛博木鱼)",
+  "version": "1.0.0",
+  "author": "chivopic",
+  "license": "MIT",
+  "description": "A desktop Zen sanctuary for the Omarchy bar: tap the electronic wooden fish to relieve stress, accumulate cyber merits (+1 功德 / Bug -1), level up your coder karma, and find inner peace during long compilations.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Cyber Muyu",
+    "description": "Electronic wooden fish & merit counter for anti-stress mindfulness",
+    "category": "Fun",
+    "aliases": ["muyu", "woodenfish", "karma", "merit", "zen", "fish", "relax"],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "showCount": true,
+      "sound": "muyu",
+      "volume": 80,
+      "mantra": "功德 +1",
+      "autoBpm": 60,
+      "dailyGoal": 108
+    },
+    "schema": [
+      {
+        "key": "showCount",
+        "type": "boolean",
+        "label": "Show merit count on bar",
+        "description": "Display today's merit count next to the lotus icon on the bar.",
+        "defaultValue": true
+      },
+      {
+        "key": "sound",
+        "type": "string",
+        "label": "Default sound effect",
+        "description": "Sound to play when striking the wooden fish (muyu, bowl, bubble, click).",
+        "defaultValue": "muyu"
+      },
+      {
+        "key": "volume",
+        "type": "integer",
+        "label": "Volume (%)",
+        "description": "Sound playback volume from 0 to 100.",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "defaultValue": 80
+      },
+      {
+        "key": "mantra",
+        "type": "string",
+        "label": "Default mantra text",
+        "description": "Floating text displayed on strike (e.g. 功德 +1, Bug -1, 头发 +1).",
+        "defaultValue": "功德 +1"
+      },
+      {
+        "key": "autoBpm",
+        "type": "integer",
+        "label": "Auto-knock speed (BPM)",
+        "description": "Beats per minute when auto-knocking is enabled.",
+        "min": 30,
+        "max": 180,
+        "step": 5,
+        "defaultValue": 60
+      },
+      {
+        "key": "dailyGoal",
+        "type": "integer",
+        "label": "Daily merit goal",
+        "description": "Number of merits to reach your daily mindfulness milestone (e.g. 108).",
+        "min": 1,
+        "max": 99999,
+        "step": 1,
+        "defaultValue": 108
+      }
+    ]
+  }
+}
