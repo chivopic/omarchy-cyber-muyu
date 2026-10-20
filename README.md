@@ -51,6 +51,30 @@ omarchy plugin enable io.github.chivopic.cyber-muyu right
 
 The panel lets you choose a mantra and sound, adjust volume and BPM, and set a daily goal. These preferences are saved locally. Automatic knocking pauses when the shell reloads.
 
+## Terminal mode
+
+The same wooden fish is available as a small interactive terminal app. From the installed plugin directory, run:
+
+```bash
+./cyber_muyu.py
+```
+
+![Terminal mode preview](assets/terminal/preview.png)
+
+The app automatically selects a renderer: Kitty graphics in compatible terminals, a full-color half-block image in truecolor terminals, or a Unicode drawing elsewhere. You can also force a mode with `--renderer kitty|ansi|unicode|ascii`. Terminal mode and the bar plugin share the same merits, streak, goal, sound, and settings; simultaneous updates are serialized by the backend.
+
+| Key | Action |
+| :--- | :--- |
+| Space / Enter / K | Knock once |
+| A | Toggle automatic knocking |
+| + / - | Raise or lower automatic pace |
+| S | Cycle through sounds |
+| M | Mute or restore sound |
+| G | Change the daily goal |
+| Q | Quit |
+
+The app needs Python 3 and an interactive terminal at least 80 columns wide and 24 rows tall. Sound playback uses `pw-play` or `paplay` when available; use `--silent` to disable it. Optional renderer and image-width defaults can be set in `~/.config/cyber-muyu/config.json`; see [`config.example.json`](config.example.json). For example, use `./cyber_muyu.py --renderer unicode` when a terminal does not support truecolor.
+
 ## Optional Hyprland keybindings
 
 Add these to your Hyprland bindings configuration:
