@@ -20,12 +20,7 @@
     "allowMultiple": false,
     "defaultSection": "right",
     "defaults": {
-      "showCount": true,
-      "sound": "muyu",
-      "volume": 80,
-      "mantra": "功德 +1",
-      "autoBpm": 60,
-      "dailyGoal": 108
+      "showCount": true
     },
     "schema": [
       {
@@ -34,50 +29,6 @@
         "label": "Show merit count on bar",
         "description": "Display today's merit count next to the lotus icon on the bar.",
         "defaultValue": true
-      },
-      {
-        "key": "sound",
-        "type": "string",
-        "label": "Default sound effect",
-        "description": "Sound to play when striking the wooden fish (muyu, bowl, bubble, click).",
-        "defaultValue": "muyu"
-      },
-      {
-        "key": "volume",
-        "type": "integer",
-        "label": "Volume (%)",
-        "description": "Sound playback volume from 0 to 100.",
-        "min": 0,
-        "max": 100,
-        "step": 5,
-        "defaultValue": 80
-      },
-      {
-        "key": "mantra",
-        "type": "string",
-        "label": "Default mantra text",
-        "description": "Floating text displayed on strike (e.g. 功德 +1, Bug -1, 头发 +1).",
-        "defaultValue": "功德 +1"
-      },
-      {
-        "key": "autoBpm",
-        "type": "integer",
-        "label": "Auto-knock speed (BPM)",
-        "description": "Beats per minute when auto-knocking is enabled.",
-        "min": 30,
-        "max": 180,
-        "step": 5,
-        "defaultValue": 60
-      },
-      {
-        "key": "dailyGoal",
-        "type": "integer",
-        "label": "Daily merit goal",
-        "description": "Number of merits to reach your daily mindfulness milestone (e.g. 108).",
-        "min": 1,
-        "max": 99999,
-        "step": 1,
-        "defaultValue": 108
       }
     ]
   }

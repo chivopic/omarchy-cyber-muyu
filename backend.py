@@ -62,8 +62,8 @@ def load_data():
         "todayDate": today,
         "todayMerits": 0,
         "totalMerits": 0,
-        "streak": 1,
-        "lastActiveDate": today,
+        "streak": 0,
+        "lastActiveDate": "",
         "dailyGoal": 108,
         "mantra": "功德 +1",
         "sound": "muyu",
@@ -102,15 +102,14 @@ def check_date_rollover(data):
         # Date has changed!
         try:
             today_d = datetime.date.fromisoformat(today)
-            last_d = datetime.date.fromisoformat(stored_date)
-            diff = (today_d - last_d).days
-            if diff == 1 and data.get("todayMerits", 0) > 0:
-                data["streak"] = data.get("streak", 1) + 1
-            elif diff > 1:
-                # streak broken if missed a day
-                data["streak"] = 1
+            datetime.date.fromisoformat(stored_date)
+            last_active = data.get("lastActiveDate")
+            if last_active:
+                last_active_d = datetime.date.fromisoformat(last_active)
+                if (today_d - last_active_d).days > 1:
+                    data["streak"] = 0
         except Exception:
-            data["streak"] = 1
+            data["streak"] = 0
 
         # Archive yesterday's count in history
         if "history" not in data:
@@ -176,9 +175,21 @@ def cmd_knock(count=1, custom_mantra=None):
     check_date_rollover(data)
     
     count = max(1, int(count))
+    today = get_today_str()
+    last_active = data.get("lastActiveDate")
+    try:
+        last_active_d = datetime.date.fromisoformat(last_active) if last_active else None
+        today_d = datetime.date.fromisoformat(today)
+        if last_active_d == today_d - datetime.timedelta(days=1):
+            data["streak"] = data.get("streak", 0) + 1
+        elif last_active_d != today_d:
+            data["streak"] = 1
+    except Exception:
+        data["streak"] = 1
+
     data["todayMerits"] = data.get("todayMerits", 0) + count
     data["totalMerits"] = data.get("totalMerits", 0) + count
-    data["lastActiveDate"] = get_today_str()
+    data["lastActiveDate"] = today
     
     if custom_mantra:
         data["mantra"] = str(custom_mantra)[:32]
