@@ -43,6 +43,7 @@ BarWidget {
   property bool popupOpen: false
   property bool autoKnocking: false
   property var pendingKnocks: []
+  property var pendingSettings: ({})
   property string barGlyph: "🪷"
   property string buttonText: showCount ? barGlyph + " " + todayMerits : barGlyph
   property string tooltipText: "赛博木鱼 · 今日功德: " + todayMerits + " · 累计: " + totalMerits + " · 境界: " + rankName + "\n左键敲击积德 · 右键修行面板 · 中键自动挂机"
@@ -126,10 +127,28 @@ BarWidget {
   }
 
   function updateSetting(key, val) {
-    if (!settingProc.running) {
-      settingProc.command = ["/usr/bin/python3", "-I", root.scriptPath, "set-setting", key, String(val)]
-      settingProc.running = true
+    var queued = {}
+    for (var queuedKey in pendingSettings) queued[queuedKey] = pendingSettings[queuedKey]
+    queued[key] = val
+    pendingSettings = queued
+    flushSettings()
+  }
+
+  function flushSettings() {
+    if (settingProc.running) return
+
+    var keys = Object.keys(pendingSettings)
+    if (keys.length === 0) return
+
+    var key = keys[0]
+    var value = pendingSettings[key]
+    var queued = {}
+    for (var queuedKey in pendingSettings) {
+      if (queuedKey !== key) queued[queuedKey] = pendingSettings[queuedKey]
     }
+    pendingSettings = queued
+    settingProc.command = ["/usr/bin/python3", "-I", root.scriptPath, "set-setting", key, String(value)]
+    settingProc.running = true
   }
 
   Component.onCompleted: refresh()
@@ -197,6 +216,7 @@ BarWidget {
       waitForEnd: true
       onStreamFinished: root.applySummary(text)
     }
+    onExited: root.flushSettings()
   }
 
   implicitWidth: button.implicitWidth
@@ -658,6 +678,41 @@ BarWidget {
               Behavior on width {
                 NumberAnimation { duration: 180; easing.type: Easing.OutQuad }
               }
+            }
+          }
+
+          Row {
+            width: parent.width
+            spacing: Style.space(8)
+
+            Text {
+              anchors.verticalCenter: parent.verticalCenter
+              text: "每日功德目标"
+              color: Commons.Color.muted
+              font.family: Style.font.family
+              font.pixelSize: Style.font.caption
+            }
+
+            TextField {
+              width: Style.space(88)
+              height: Style.space(28)
+              text: String(root.dailyGoal)
+              validator: IntValidator { bottom: 1; top: 99999 }
+              onAccepted: {
+                var goal = Number(text)
+                if (isFinite(goal) && goal >= 1 && goal <= 99999) {
+                  root.dailyGoal = Math.round(goal)
+                  root.updateSetting("dailyGoal", root.dailyGoal)
+                }
+              }
+            }
+
+            Text {
+              anchors.verticalCenter: parent.verticalCenter
+              text: "次"
+              color: Commons.Color.muted
+              font.family: Style.font.family
+              font.pixelSize: Style.font.caption
             }
           }
 
