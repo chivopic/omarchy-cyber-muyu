@@ -42,6 +42,7 @@ BarWidget {
   // UI state
   property bool popupOpen: false
   property bool autoKnocking: false
+  property var pendingKnocks: []
   property var pendingSettings: ({})
   property string barGlyph: "🪷"
   property string buttonText: showCount ? barGlyph + " " + todayMerits : barGlyph
@@ -88,17 +89,28 @@ BarWidget {
 
     // Stage feedback if popup is open
     if (popupOpen && woodenFishStage) {
-      woodenFishStage.strike(txt)
+      woodenFishStage.animateStrike(txt)
     }
 
     // Audio feedback
     playSound()
 
-    // Sync with backend
-    if (!knockProc.running) {
-      knockProc.command = ["/usr/bin/python3", "-I", root.scriptPath, "knock", "1", txt]
-      knockProc.running = true
-    }
+    // Keep every tap until the backend has persisted it.
+    var queued = pendingKnocks.slice()
+    queued.push(txt)
+    pendingKnocks = queued
+    flushKnocks()
+  }
+
+  function flushKnocks() {
+    if (knockProc.running || pendingKnocks.length === 0) return
+
+    var mantra = String(pendingKnocks[0] || defaultMantra)
+    var count = 1
+    while (count < pendingKnocks.length && pendingKnocks[count] === mantra) count += 1
+    pendingKnocks = pendingKnocks.slice(count)
+    knockProc.command = ["/usr/bin/python3", "-I", root.scriptPath, "knock", String(count), mantra]
+    knockProc.running = true
   }
 
   function applySummary(raw) {
@@ -194,6 +206,7 @@ BarWidget {
       waitForEnd: true
       onStreamFinished: root.applySummary(text)
     }
+    onExited: root.flushKnocks()
   }
 
   Process {

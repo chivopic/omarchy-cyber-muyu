@@ -16,7 +16,7 @@ Item {
   implicitHeight: Style.space(170)
 
   // Trigger strike animation
-  function strike(text) {
+  function animateStrike(text) {
     var floatText = text || root.mantra || "功德 +1"
     
     // Trigger bounce animation
@@ -27,6 +27,11 @@ Item {
     // Spawn floating karma text
     spawnFloatingText(floatText)
 
+  }
+
+  function strike(text) {
+    var floatText = text || root.mantra || "功德 +1"
+    animateStrike(floatText)
     root.struck(floatText)
   }
 
