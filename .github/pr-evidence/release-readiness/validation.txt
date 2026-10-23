@@ -1,0 +1,28 @@
+Branch: fix/release-readiness
+Base: origin/main at df37d15
+
+Manifest validation
+  command: omarchy plugin validate "$PWD"
+  result: exit 0
+
+QML regression + rendered evidence
+  command: QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software /usr/lib/qt6/bin/qml tests/merit-state-regression.qml
+  result: exit 0; rendered merit-state-regression.png; all 14 assertions pass
+
+Regression harness negative control
+  command: QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software /usr/lib/qt6/bin/qml tests/merit-state-regression.qml -- --force-failure
+  result: exit 1 as expected for an intentionally failed assertion
+
+QML lint (Omarchy imports resolved from the installed shell)
+  setup: mkdir -p /tmp/cyber-muyu-imports
+         ln -sfn /usr/share/omarchy/shell /tmp/cyber-muyu-imports/qs
+  command: /usr/lib/qt6/bin/qmllint -I /tmp/cyber-muyu-imports -I /usr/share/omarchy/shell BarWidget.qml MeritState.qml ProcessResultGate.qml tests/merit-state-regression.qml
+  result: exit 0; no syntax errors, no missing tint/radius members, and no missing MeritState type. The log contains existing dynamic Omarchy QObject-member and unqualified-access warnings; see qmllint.log.
+
+Whitespace validation
+  command: git diff --check
+  result: exit 0
+
+The QtQuick regression loads the production counter state object. It does not
+launch a Quickshell plugin instance, access user configuration or merit data,
+or verify theme contrast on a live desktop.

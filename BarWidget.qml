@@ -19,9 +19,22 @@ BarWidget {
   readonly property int defaultDailyGoal: setting("dailyGoal", 108)
 
   // Live state from backend
-  property var summary: ({})
-  property int todayMerits: Number(summary.todayMerits || 0)
-  property int totalMerits: Number(summary.totalMerits || 0)
+  MeritState { id: meritState }
+  ProcessResultGate {
+    id: knockBatch
+    onBatchCompleted: function(count, output, exitCode) {
+      root.finishKnockBatch(count, output, exitCode)
+    }
+  }
+  ProcessResultGate {
+    id: statusRequest
+    onBatchCompleted: function(count, output, exitCode, requestRevision) {
+      root.finishStatusRefresh(output, exitCode, requestRevision)
+    }
+  }
+  readonly property var summary: meritState.summary
+  readonly property int todayMerits: meritState.todayMerits
+  readonly property int totalMerits: meritState.totalMerits
   property int streak: Number(summary.streak || 1)
   property int dailyGoal: Number(summary.dailyGoal || defaultDailyGoal)
   property real goalProgress: Number(summary.goalProgress || 0)
@@ -44,6 +57,7 @@ BarWidget {
   property bool autoKnocking: false
   property var pendingKnocks: []
   property var pendingSettings: ({})
+  property bool refreshQueued: false
   property string barGlyph: "🪷"
   property string buttonText: showCount ? barGlyph + " " + todayMerits : barGlyph
   property string tooltipText: "赛博木鱼 · 今日功德: " + todayMerits + " · 累计: " + totalMerits + " · 境界: " + rankName + "\n左键敲击积德 · 右键修行面板 · 中键自动挂机"
@@ -79,9 +93,8 @@ BarWidget {
   function knock(customMantra) {
     var txt = customMantra || activeMantra || "功德 +1"
     
-    // Optimistic live update
-    todayMerits += 1
-    totalMerits += 1
+    // Keep optimistic taps separate from backend-derived counters.
+    meritState.noteKnock()
     
     // Visual feedback on bar
     barBounceAnim.restart()
@@ -103,27 +116,56 @@ BarWidget {
   }
 
   function flushKnocks() {
-    if (knockProc.running || pendingKnocks.length === 0) return
+    if (knockProc.running || knockBatch.active) return
+    if (pendingKnocks.length === 0) {
+      if (refreshQueued && meritState.pendingKnocks === 0) refresh()
+      return
+    }
 
     var mantra = String(pendingKnocks[0] || defaultMantra)
     var count = 1
     while (count < pendingKnocks.length && pendingKnocks[count] === mantra) count += 1
+    if (!knockBatch.begin(count, 0)) return
     pendingKnocks = pendingKnocks.slice(count)
     knockProc.command = ["/usr/bin/python3", "-I", root.scriptPath, "knock", String(count), mantra]
     knockProc.running = true
   }
 
-  function applySummary(raw) {
-    try {
-      var parsed = JSON.parse(String(raw || ""))
-      if (parsed && typeof parsed === "object") summary = parsed
-    } catch (e) {
-      console.warn("cyber-muyu: failed parsing summary: " + e)
+  function applySnapshot(raw, requestRevision) {
+    meritState.applySnapshot(raw, requestRevision)
+  }
+
+  function finishKnockBatch(count, output, exitCode) {
+    if (exitCode === 0) {
+      if (!meritState.applyKnock(output, count)) {
+        console.warn("cyber-muyu: knock returned an invalid summary; refreshing state")
+        refreshQueued = true
+      }
+    } else {
+      meritState.rejectKnock(count)
+      console.warn("cyber-muyu: knock process failed with exit code " + exitCode)
+      refreshQueued = true
     }
+    // Run after the Process signal returns so its running property has settled.
+    Qt.callLater(function() { root.flushKnocks() })
   }
 
   function refresh() {
-    if (!statusProc.running) statusProc.running = true
+    refreshQueued = true
+    startQueuedRefresh()
+  }
+
+  function startQueuedRefresh() {
+    if (!refreshQueued || statusProc.running || statusRequest.active || knockProc.running || knockBatch.active || meritState.pendingKnocks > 0) return
+    refreshQueued = false
+    if (!statusRequest.begin(0, meritState.knockRevision)) return
+    statusProc.running = true
+  }
+
+  function finishStatusRefresh(output, exitCode, requestRevision) {
+    if (exitCode === 0) applySnapshot(output, requestRevision)
+    // Let Process.running settle before reusing the Process object.
+    Qt.callLater(function() { root.startQueuedRefresh() })
   }
 
   function updateSetting(key, val) {
@@ -148,6 +190,7 @@ BarWidget {
     }
     pendingSettings = queued
     settingProc.command = ["/usr/bin/python3", "-I", root.scriptPath, "set-setting", key, String(value)]
+    settingProc.requestRevision = meritState.knockRevision
     settingProc.running = true
   }
 
@@ -190,13 +233,21 @@ BarWidget {
   }
 
   // Backend Process Handlers
+  // quickshell-io.qmltypes orders ExitStatus as NormalExit=0, CrashExit=1;
+  // a crash has no usable exit code and is normalized to failure.
   Process {
     id: statusProc
     command: ["/usr/bin/python3", "-I", root.scriptPath, "status"]
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: root.applySummary(text)
+      onStreamFinished: statusRequest.finishOutput(text)
     }
+    onExited: function(exitCode, exitStatus) {
+      statusRequest.finishProcess(exitStatus === 0 ? exitCode : -1)
+    }
+    // In quickshell-io.qmltypes, QProcess::ProcessError.FailedToStart is 0;
+    // Crashed is 1 and continues through the normal exited + stream-finished gate.
+    onErrorOccurred: function(error) { if (error === 0) statusRequest.failToStart() }
   }
 
   Process {
@@ -204,17 +255,22 @@ BarWidget {
     command: ["/usr/bin/python3", "-I", root.scriptPath, "knock", "1"]
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: root.applySummary(text)
+      onStreamFinished: knockBatch.finishOutput(text)
     }
-    onExited: root.flushKnocks()
+    onExited: function(exitCode, exitStatus) {
+      knockBatch.finishProcess(exitStatus === 0 ? exitCode : -1)
+    }
+    // FailedToStart has no exited signal; runtime Crashed errors use the gate above.
+    onErrorOccurred: function(error) { if (error === 0) knockBatch.failToStart() }
   }
 
   Process {
     id: settingProc
+    property int requestRevision: 0
     command: ["/usr/bin/python3", "-I", root.scriptPath, "status"]
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: root.applySummary(text)
+      onStreamFinished: root.applySnapshot(text, settingProc.requestRevision)
     }
     onExited: root.flushSettings()
   }
@@ -403,8 +459,8 @@ BarWidget {
       Rectangle {
         width: parent.width
         height: Style.space(40)
-        radius: Style.radius.medium || 6
-        color: Style.tint(Commons.Color.popups.background, Commons.Color.foreground, 0.04)
+        radius: Style.cornerRadius > 0 ? Style.cornerRadius : 6
+        color: Qt.tint(Commons.Color.popups.background, Qt.rgba(Commons.Color.foreground.r, Commons.Color.foreground.g, Commons.Color.foreground.b, 0.04))
         border.color: Commons.Color.popups.border
         border.width: 1
 
@@ -612,8 +668,8 @@ BarWidget {
       // 6. Karma Stats & Daily Goal
       Rectangle {
         width: parent.width
-        radius: Style.radius.medium || 6
-        color: Style.tint(Commons.Color.popups.background, Commons.Color.foreground, 0.04)
+        radius: Style.cornerRadius > 0 ? Style.cornerRadius : 6
+        color: Qt.tint(Commons.Color.popups.background, Qt.rgba(Commons.Color.foreground.r, Commons.Color.foreground.g, Commons.Color.foreground.b, 0.04))
         border.color: Commons.Color.popups.border
         border.width: 1
         implicitHeight: statsCol.implicitHeight + Style.space(16)
@@ -667,7 +723,7 @@ BarWidget {
             width: parent.width
             height: Style.space(6)
             radius: 3
-            color: Style.tint(Commons.Color.popups.background, Commons.Color.foreground, 0.12)
+            color: Qt.tint(Commons.Color.popups.background, Qt.rgba(Commons.Color.foreground.r, Commons.Color.foreground.g, Commons.Color.foreground.b, 0.12))
 
             Rectangle {
               width: parent.width * Math.min(1.0, root.goalProgress)

@@ -1,0 +1,225 @@
+Warning: BarWidget.qml:312:30: Member "position" not found on type "QObject" [missing-property]
+    y: (root.bar && root.bar.position === "bottom") ? button.y - Style.space(25) : button.y + button.height + Style.space(5)
+                             ^^^^^^^^
+Warning: BarWidget.qml:328:31: Member "family" not found on type "QObject" [missing-property]
+      font.family: Style.font.family
+                              ^^^^^^
+Warning: BarWidget.qml:329:34: Member "small" not found on type "QObject" [missing-property]
+      font.pixelSize: Style.font.small
+                                 ^^^^^
+Warning: BarWidget.qml:347:37: Member "position" not found on type "QObject" [missing-property]
+          to: (root.bar && root.bar.position === "bottom") ? -Style.space(25) : Style.space(25)
+                                    ^^^^^^^^
+Warning: BarWidget.qml:380:35: Member "family" not found on type "QObject" [missing-property]
+          font.family: Style.font.family
+                                  ^^^^^^
+Warning: BarWidget.qml:381:38: Member "display" not found on type "QObject" [missing-property]
+          font.pixelSize: Style.font.display
+                                     ^^^^^^^
+Warning: BarWidget.qml:394:39: Member "family" not found on type "QObject" [missing-property]
+              font.family: Style.font.family
+                                      ^^^^^^
+Warning: BarWidget.qml:395:42: Member "title" not found on type "QObject" [missing-property]
+              font.pixelSize: Style.font.title
+                                         ^^^^^
+Warning: BarWidget.qml:413:41: Member "family" not found on type "QObject" [missing-property]
+                font.family: Style.font.family
+                                        ^^^^^^
+Warning: BarWidget.qml:414:44: Member "caption" not found on type "QObject" [missing-property]
+                font.pixelSize: Style.font.caption
+                                           ^^^^^^^
+Warning: BarWidget.qml:423:37: Member "family" not found on type "QObject" [missing-property]
+            font.family: Style.font.family
+                                    ^^^^^^
+Warning: BarWidget.qml:424:40: Member "caption" not found on type "QObject" [missing-property]
+            font.pixelSize: Style.font.caption
+                                       ^^^^^^^
+Warning: BarWidget.qml:432:37: Member "border" not found on type "QObject" [missing-property]
+        color: Commons.Color.popups.border
+                                    ^^^^^^
+Warning: BarWidget.qml:463:45: Member "background" not found on type "QObject" [missing-property]
+        color: Qt.tint(Commons.Color.popups.background, Qt.rgba(Commons.Color.foreground.r, Commons.Color.foreground.g, Commons.Color.foreground.b, 0.04))
+                                            ^^^^^^^^^^
+Warning: BarWidget.qml:464:44: Member "border" not found on type "QObject" [missing-property]
+        border.color: Commons.Color.popups.border
+                                           ^^^^^^
+Warning: BarWidget.qml:477:37: Member "family" not found on type "QObject" [missing-property]
+            font.family: Style.font.family
+                                    ^^^^^^
+Warning: BarWidget.qml:478:40: Member "body" not found on type "QObject" [missing-property]
+            font.pixelSize: Style.font.body
+                                       ^^^^
+Warning: BarWidget.qml:501:35: Member "family" not found on type "QObject" [missing-property]
+          font.family: Style.font.family
+                                  ^^^^^^
+Warning: BarWidget.qml:502:38: Member "caption" not found on type "QObject" [missing-property]
+          font.pixelSize: Style.font.caption
+                                     ^^^^^^^
+Warning: BarWidget.qml:525:35: Member "family" not found on type "QObject" [missing-property]
+          font.family: Style.font.family
+                                  ^^^^^^
+Warning: BarWidget.qml:526:38: Member "caption" not found on type "QObject" [missing-property]
+          font.pixelSize: Style.font.caption
+                                     ^^^^^^^
+Warning: BarWidget.qml:539:35: Member "family" not found on type "QObject" [missing-property]
+          font.family: Style.font.family
+                                  ^^^^^^
+Warning: BarWidget.qml:540:38: Member "caption" not found on type "QObject" [missing-property]
+          font.pixelSize: Style.font.caption
+                                     ^^^^^^^
+Warning: BarWidget.qml:551:23: Unqualified access [unqualified]
+              width: (contentCol.width - Style.space(12)) / 3
+                      ^^^^^^^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:553:21: Unqualified access [unqualified]
+              text: modelData
+                    ^^^^^^^^^
+Warning: BarWidget.qml:554:25: Unqualified access [unqualified]
+              selected: root.activeMantra === modelData
+                        ^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:554:47: Unqualified access [unqualified]
+              selected: root.activeMantra === modelData
+                                              ^^^^^^^^^
+Warning: BarWidget.qml:556:36: Member "small" not found on type "QObject" [missing-property]
+              fontSize: Style.font.small
+                                   ^^^^^
+Warning: BarWidget.qml:558:17: Unqualified access [unqualified]
+                root.activeMantra = modelData
+                ^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:558:37: Unqualified access [unqualified]
+                root.activeMantra = modelData
+                                    ^^^^^^^^^
+Warning: BarWidget.qml:559:17: Unqualified access [unqualified]
+                root.updateSetting("mantra", modelData)
+                ^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:559:46: Unqualified access [unqualified]
+                root.updateSetting("mantra", modelData)
+                                             ^^^^^^^^^
+Warning: BarWidget.qml:588:35: Member "family" not found on type "QObject" [missing-property]
+          font.family: Style.font.family
+                                  ^^^^^^
+Warning: BarWidget.qml:589:38: Member "caption" not found on type "QObject" [missing-property]
+          font.pixelSize: Style.font.caption
+                                     ^^^^^^^
+Warning: BarWidget.qml:604:23: Unqualified access [unqualified]
+              width: (contentCol.width - Style.space(18)) / 4
+                      ^^^^^^^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:606:21: Unqualified access [unqualified]
+              text: modelData.label
+                    ^^^^^^^^^
+Warning: BarWidget.qml:607:25: Unqualified access [unqualified]
+              selected: root.currentSound === modelData.id
+                        ^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:607:47: Unqualified access [unqualified]
+              selected: root.currentSound === modelData.id
+                                              ^^^^^^^^^
+Warning: BarWidget.qml:609:36: Member "small" not found on type "QObject" [missing-property]
+              fontSize: Style.font.small
+                                   ^^^^^
+Warning: BarWidget.qml:611:17: Unqualified access [unqualified]
+                root.currentSound = modelData.id
+                ^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:611:37: Unqualified access [unqualified]
+                root.currentSound = modelData.id
+                                    ^^^^^^^^^
+Warning: BarWidget.qml:612:17: Unqualified access [unqualified]
+                root.playSound()
+                ^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:613:17: Unqualified access [unqualified]
+                root.updateSetting("sound", modelData.id)
+                ^^^^
+Info: Set "pragma ComponentBehavior: Bound" in order to use IDs from outer components in nested components.
+Suggested change:
+pragma ComponentBehavior: Bound
+import QtQuick
+Warning: BarWidget.qml:613:45: Unqualified access [unqualified]
+                root.updateSetting("sound", modelData.id)
+                                            ^^^^^^^^^
+Warning: BarWidget.qml:662:37: Member "family" not found on type "QObject" [missing-property]
+            font.family: Style.font.family
+                                    ^^^^^^
+Warning: BarWidget.qml:663:40: Member "caption" not found on type "QObject" [missing-property]
+            font.pixelSize: Style.font.caption
+                                       ^^^^^^^
+Warning: BarWidget.qml:672:45: Member "background" not found on type "QObject" [missing-property]
+        color: Qt.tint(Commons.Color.popups.background, Qt.rgba(Commons.Color.foreground.r, Commons.Color.foreground.g, Commons.Color.foreground.b, 0.04))
+                                            ^^^^^^^^^^
+Warning: BarWidget.qml:673:44: Member "border" not found on type "QObject" [missing-property]
+        border.color: Commons.Color.popups.border
+                                           ^^^^^^
+Warning: BarWidget.qml:697:41: Member "family" not found on type "QObject" [missing-property]
+                font.family: Style.font.family
+                                        ^^^^^^
+Warning: BarWidget.qml:698:44: Member "caption" not found on type "QObject" [missing-property]
+                font.pixelSize: Style.font.caption
+                                           ^^^^^^^
+Warning: BarWidget.qml:704:41: Member "family" not found on type "QObject" [missing-property]
+                font.family: Style.font.family
+                                        ^^^^^^
+Warning: BarWidget.qml:705:44: Member "caption" not found on type "QObject" [missing-property]
+                font.pixelSize: Style.font.caption
+                                           ^^^^^^^
+Warning: BarWidget.qml:715:39: Member "family" not found on type "QObject" [missing-property]
+              font.family: Style.font.family
+                                      ^^^^^^
+Warning: BarWidget.qml:716:42: Member "caption" not found on type "QObject" [missing-property]
+              font.pixelSize: Style.font.caption
+                                         ^^^^^^^
+Warning: BarWidget.qml:726:49: Member "background" not found on type "QObject" [missing-property]
+            color: Qt.tint(Commons.Color.popups.background, Qt.rgba(Commons.Color.foreground.r, Commons.Color.foreground.g, Commons.Color.foreground.b, 0.12))
+                                                ^^^^^^^^^^
+Warning: BarWidget.qml:748:39: Member "family" not found on type "QObject" [missing-property]
+              font.family: Style.font.family
+                                      ^^^^^^
+Warning: BarWidget.qml:749:42: Member "caption" not found on type "QObject" [missing-property]
+              font.pixelSize: Style.font.caption
+                                         ^^^^^^^
+Warning: BarWidget.qml:770:39: Member "family" not found on type "QObject" [missing-property]
+              font.family: Style.font.family
+                                      ^^^^^^
+Warning: BarWidget.qml:771:42: Member "caption" not found on type "QObject" [missing-property]
+              font.pixelSize: Style.font.caption
+                                         ^^^^^^^
+Warning: BarWidget.qml:783:39: Member "family" not found on type "QObject" [missing-property]
+              font.family: Style.font.family
+                                      ^^^^^^
+Warning: BarWidget.qml:784:42: Member "caption" not found on type "QObject" [missing-property]
+              font.pixelSize: Style.font.caption
+                                         ^^^^^^^
+Warning: BarWidget.qml:790:39: Member "family" not found on type "QObject" [missing-property]
+              font.family: Style.font.family
+                                      ^^^^^^
+Warning: BarWidget.qml:791:42: Member "caption" not found on type "QObject" [missing-property]
+              font.pixelSize: Style.font.caption
+                                         ^^^^^^^
