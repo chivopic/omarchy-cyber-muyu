@@ -5,6 +5,7 @@ import argparse
 import base64
 import json
 import os
+import random
 import select
 import shutil
 import subprocess
@@ -164,10 +165,11 @@ def put(row, col, text, color=""):
 
 
 class TerminalApp:
-    def __init__(self, renderer, image_width, silent=False):
+    def __init__(self, renderer, image_width, silent=False, detune=True):
         self.renderer = renderer
         self.image_width = image_width
         self.silent = silent
+        self.detune = detune
         self.summary = backend("status")
         self.auto = False
         self.last_hit = 0.0
@@ -186,11 +188,19 @@ class TerminalApp:
         if sound not in SOUNDS:
             return
         path = ROOT / "sounds" / f"{sound}.wav"
+        jittered_volume = max(0.01, min(1.0, (self.volume + random.uniform(-2, 2)) / 100))
         player = shutil.which("pw-play")
-        command = [player, "--volume", str(self.volume / 100), str(path)] if player else None
-        if command is None:
+        command = None
+        if player:
+            command = [player, "--volume", str(jittered_volume)]
+            if self.detune:
+                rate = int(44100 * (1.0 + random.uniform(-0.035, 0.035)))
+                command.extend(["--rate", str(rate)])
+            command.append(str(path))
+        else:
             player = shutil.which("paplay")
-            command = [player, f"--volume={round(self.volume * 655.36)}", str(path)] if player else None
+            if player:
+                command = [player, f"--volume={round(jittered_volume * 65536)}", str(path)]
         if command:
             try:
                 subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -400,6 +410,7 @@ def main():
     parser.add_argument("--renderer", choices=("auto", "kitty", "ansi", "unicode", "ascii"), help="art rendering mode")
     parser.add_argument("--image-width", type=int, help="image width in terminal cells (16–52)")
     parser.add_argument("--silent", action="store_true", help="disable strike sounds")
+    parser.add_argument("--no-detune", action="store_true", help="disable pitch detuning on playback")
     args = parser.parse_args()
     renderer = args.renderer or os.environ.get("CYBER_MUYU_RENDERER") or config.get("renderer", "auto")
     if not isinstance(renderer, str) or renderer not in {"auto", "kitty", "ansi", "unicode", "ascii"}:
@@ -408,7 +419,7 @@ def main():
     image_width = args.image_width or config.get("image_width", 44)
     try:
         image_width = max(16, min(52, int(image_width)))
-        TerminalApp(renderer, image_width, args.silent).run()
+        TerminalApp(renderer, image_width, args.silent, detune=not args.no_detune).run()
     except (OSError, TypeError, ValueError, RuntimeError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
         print(f"cyber-muyu: {error}", file=sys.stderr)
         return 1
