@@ -163,6 +163,24 @@ def put(row, col, text, color=""):
     return f"\033[{row};{col}H{color}{text}{RESET}"
 
 
+def play_sound(sound, volume=80, silent=False):
+    if silent or volume <= 0:
+        return
+    if sound not in SOUNDS:
+        return
+    path = ROOT / "sounds" / f"{sound}.wav"
+    player = shutil.which("pw-play")
+    command = [player, "--volume", str(volume / 100), str(path)] if player else None
+    if command is None:
+        player = shutil.which("paplay")
+        command = [player, f"--volume={round(volume * 655.36)}", str(path)] if player else None
+    if command:
+        try:
+            subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            pass
+
+
 class TerminalApp:
     def __init__(self, renderer, image_width, silent=False):
         self.renderer = renderer
@@ -180,22 +198,7 @@ class TerminalApp:
         self._ansi_width = 0
 
     def play_sound(self):
-        if self.silent or self.volume <= 0:
-            return
-        sound = self.summary.get("sound", "muyu")
-        if sound not in SOUNDS:
-            return
-        path = ROOT / "sounds" / f"{sound}.wav"
-        player = shutil.which("pw-play")
-        command = [player, "--volume", str(self.volume / 100), str(path)] if player else None
-        if command is None:
-            player = shutil.which("paplay")
-            command = [player, f"--volume={round(self.volume * 655.36)}", str(path)] if player else None
-        if command:
-            try:
-                subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            except OSError:
-                pass
+        play_sound(self.summary.get("sound", "muyu"), self.volume, self.silent)
 
     def strike(self):
         mantra = str(self.summary.get("mantra", "功德 +1"))[:32]
@@ -400,13 +403,54 @@ def main():
     parser.add_argument("--renderer", choices=("auto", "kitty", "ansi", "unicode", "ascii"), help="art rendering mode")
     parser.add_argument("--image-width", type=int, help="image width in terminal cells (16–52)")
     parser.add_argument("--silent", action="store_true", help="disable strike sounds")
+    parser.add_argument("--status", action="store_true", help="print one-line status summary and exit")
+    parser.add_argument("--plain", "--no-emoji", dest="plain", action="store_true", help="omit emojis in status summary")
+    parser.add_argument("--json", action="store_true", dest="dump_json", help="dump backend summary JSON and exit")
+    parser.add_argument(
+        "--knock",
+        nargs="?",
+        const="DEFAULT",
+        default=None,
+        metavar="MANTRA",
+        help="strike once non-interactively, optional custom mantra",
+    )
     args = parser.parse_args()
-    renderer = args.renderer or os.environ.get("CYBER_MUYU_RENDERER") or config.get("renderer", "auto")
-    if not isinstance(renderer, str) or renderer not in {"auto", "kitty", "ansi", "unicode", "ascii"}:
-        parser.error("renderer must be auto, kitty, ansi, unicode, or ascii")
-    renderer = detect_renderer(renderer)
-    image_width = args.image_width or config.get("image_width", 44)
+
     try:
+        if args.dump_json:
+            summary = backend("status")
+            print(json.dumps(summary, ensure_ascii=False, indent=2))
+            return 0
+
+        if args.status:
+            summary = backend("status")
+            today = summary.get("todayMerits", 0)
+            rank = summary.get("rank", "扫地码农")
+            prefix = "" if args.plain else "🪷 "
+            print(f"{prefix}{today} 功德 · {rank}")
+            return 0
+
+        if args.knock is not None:
+            if args.knock == "DEFAULT":
+                current = backend("status")
+                mantra = str(current.get("mantra", "功德 +1"))[:32]
+            else:
+                mantra = str(args.knock)[:32]
+            summary = backend("knock", 1, mantra)
+            volume = int(summary.get("volume", 80))
+            sound = summary.get("sound", "muyu")
+            play_sound(sound, volume, args.silent)
+            today = summary.get("todayMerits", 0)
+            total = summary.get("totalMerits", 0)
+            active_mantra = summary.get("mantra", mantra)
+            print(f"✦ {active_mantra} (今日: {today} · 累计: {total})")
+            return 0
+
+        renderer = args.renderer or os.environ.get("CYBER_MUYU_RENDERER") or config.get("renderer", "auto")
+        if not isinstance(renderer, str) or renderer not in {"auto", "kitty", "ansi", "unicode", "ascii"}:
+            parser.error("renderer must be auto, kitty, ansi, unicode, or ascii")
+        renderer = detect_renderer(renderer)
+        image_width = args.image_width or config.get("image_width", 44)
         image_width = max(16, min(52, int(image_width)))
         TerminalApp(renderer, image_width, args.silent).run()
     except (OSError, TypeError, ValueError, RuntimeError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
