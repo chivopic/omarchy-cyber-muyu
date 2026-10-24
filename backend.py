@@ -9,10 +9,23 @@ import sys
 import os
 import json
 import datetime
+import fcntl
+from contextlib import contextmanager
 from pathlib import Path
 
 DATA_DIR = Path.home() / ".local" / "state" / "omarchy" / "cyber-muyu"
 DATA_FILE = DATA_DIR / "data.json"
+
+@contextmanager
+def state_lock():
+    """Serialize state reads and writes across the bar plugin and terminal client."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with open(DATA_DIR / ".lock", "w", encoding="utf-8") as lock_file:
+        fcntl.flock(lock_file, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file, fcntl.LOCK_UN)
 
 RANKS = [
     (0, "扫地码农", "Novice Monk", "身如菩提树，心如明镜台"),
@@ -235,29 +248,30 @@ def cmd_reset_today():
     print(json.dumps(summary, ensure_ascii=False))
 
 def main():
-    if len(sys.argv) < 2:
-        cmd_status()
-        return
+    with state_lock():
+        if len(sys.argv) < 2:
+            cmd_status()
+            return
 
-    cmd = sys.argv[1].lower()
-    if cmd == "status":
-        cmd_status()
-    elif cmd == "knock":
-        count = sys.argv[2] if len(sys.argv) > 2 else 1
-        mantra = sys.argv[3] if len(sys.argv) > 3 else None
-        cmd_knock(count, mantra)
-    elif cmd == "set-goal":
-        goal = sys.argv[2] if len(sys.argv) > 2 else 108
-        cmd_set_goal(goal)
-    elif cmd == "set-setting":
-        if len(sys.argv) >= 4:
-            cmd_set_setting(sys.argv[2], sys.argv[3])
+        cmd = sys.argv[1].lower()
+        if cmd == "status":
+            cmd_status()
+        elif cmd == "knock":
+            count = sys.argv[2] if len(sys.argv) > 2 else 1
+            mantra = sys.argv[3] if len(sys.argv) > 3 else None
+            cmd_knock(count, mantra)
+        elif cmd == "set-goal":
+            goal = sys.argv[2] if len(sys.argv) > 2 else 108
+            cmd_set_goal(goal)
+        elif cmd == "set-setting":
+            if len(sys.argv) >= 4:
+                cmd_set_setting(sys.argv[2], sys.argv[3])
+            else:
+                cmd_status()
+        elif cmd == "reset-today":
+            cmd_reset_today()
         else:
             cmd_status()
-    elif cmd == "reset-today":
-        cmd_reset_today()
-    else:
-        cmd_status()
 
 if __name__ == "__main__":
     main()
