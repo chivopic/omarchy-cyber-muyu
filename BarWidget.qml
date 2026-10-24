@@ -81,11 +81,12 @@ BarWidget {
   function playSound() {
     if (soundMuted || soundVolume <= 0) return
     try {
-      soundPlayer.volume = Math.max(0.0, Math.min(1.0, soundVolume / 100.0))
+      soundPlayer.volume = Math.max(0.01, Math.min(1.0, (soundVolume + (Math.random() * 6 - 3)) / 100.0))
       soundPlayer.stop()
       soundPlayer.play()
     } catch (e) {
-      Quickshell.execDetached(["pw-play", soundPath(currentSound)])
+      var rate = Math.round(42500 + Math.random() * (45600 - 42500))
+      Quickshell.execDetached(["pw-play", "--rate", String(rate), soundPath(currentSound)])
     }
   }
 
